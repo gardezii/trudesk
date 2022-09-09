@@ -172,9 +172,7 @@ const eventTicketCreated = require('./events/event_ticket_created')
               unread: true
             })
 
-            notification.save(function (err) {
-              return cb(err)
-            })
+            notification.save()
           },
           function (cb) {
             if (_.isUndefined(ticket.assignee)) return cb()
@@ -190,9 +188,26 @@ const eventTicketCreated = require('./events/event_ticket_created')
               unread: true
             })
 
-            notification.save(function (err) {
-              return cb(err)
-            })
+            notification.save()
+          },
+          function (cb) {
+            const owner = ticket.owner._id.toString();
+            const assignee = ticket.assignee ? ticket.assignee._id.toString() : null;
+            const ids = _.uniq(_.map(ticket.history, 'owner._id'))
+            _.forEach(ids, function(idObj) {
+              if (idObj.toString() !== owner && idObj.toString() !== assignee) {
+                const notification = new NotificationSchema({
+                  owner: idObj,
+                  title: 'Comment Added to Ticket#' + ticket.uid,
+                  message: ticket.subject,
+                  type: 2,
+                  data: { ticket: ticket },
+                  unread: true
+                })
+
+                notification.save();
+              }
+            });
           },
           function (cb) {
             sendPushNotification(

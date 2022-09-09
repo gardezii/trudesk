@@ -274,14 +274,13 @@ class SingleTicketContainer extends React.Component {
 
     // Perms
     const hasTicketUpdate = this.ticket && this.ticket.status !== 3 && helpers.canUser('tickets:update')
-    const hasTicketStatusUpdate = () => {
+    const hasTicketUpdatePerm = () => {
       const isAgent = this.props.sessionUser ? this.props.sessionUser.role.isAgent : false
       const isAdmin = this.props.sessionUser ? this.props.sessionUser.role.isAdmin : false
       if (isAgent || isAdmin) {
         return helpers.canUser('tickets:update')
       } else {
-        if (!this.ticket || !this.props.sessionUser) return false
-        return helpers.hasPermOverRole(this.ticket.owner.role, this.props.sessionUser.role, 'tickets:update', false)
+        return false
       }
     }
 
@@ -302,7 +301,7 @@ class SingleTicketContainer extends React.Component {
                     status={this.ticket.status}
                     socket={this.props.socket}
                     onStatusChange={status => (this.ticket.status = status)}
-                    hasPerm={hasTicketStatusUpdate()}
+                    hasPerm={hasTicketUpdatePerm()}
                   />
                 </div>
                 {/*  Left Side */}
@@ -311,7 +310,7 @@ class SingleTicketContainer extends React.Component {
                     <div className='ticket-assignee-wrap uk-clearfix' style={{ paddingRight: 30 }}>
                       <h4>Assignee</h4>
                       <div className='ticket-assignee uk-clearfix'>
-                        {hasTicketUpdate && (
+                        {hasTicketUpdatePerm() && (
                           <a
                             role='button'
                             title='Set Assignee'
@@ -329,7 +328,7 @@ class SingleTicketContainer extends React.Component {
                             </PDropdownTrigger>
                           </a>
                         )}
-                        {!hasTicketUpdate && (
+                        {!hasTicketUpdatePerm() && (
                           <Avatar
                             image={this.ticket.assignee && this.ticket.assignee.image}
                             showOnlineBubble={this.ticket.assignee !== undefined}
